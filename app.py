@@ -21,7 +21,7 @@ if st.button("Responder con mi voz"):
         client = OpenAI(api_key=openai_api_key)
         with st.spinner("GPT está pensando..."):
             response = client.chat.completions.create(
-                model="gpt-4-1106-preview",
+                model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "Responde de manera natural y conversacional"},
                     {"role": "user", "content": user_input}
