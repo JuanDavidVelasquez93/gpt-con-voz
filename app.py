@@ -5,13 +5,13 @@ from io import BytesIO
 from pydub import AudioSegment
 
 # === Interfaz ===
-st.title("GPT con tu voz clonada 🎙️")
+st.title("GPT con tu voz clonada")
 st.write("Haz una pregunta y escucha la respuesta con tu voz (gracias a ElevenLabs)")
 
-openai_api_key = st.text_input("🔑 OpenAI API Key", type="password")
-eleven_api_key = st.text_input("🔑 ElevenLabs API Key", type="password")
-voice_id = st.text_input("🗣️ Voice ID de ElevenLabs")
-user_input = st.text_area("📝 Escribe tu pregunta aquí")
+openai_api_key = st.text_input("OpenAI API Key", type="password")
+eleven_api_key = st.text_input("ElevenLabs API Key", type="password")
+voice_id = st.text_input("Voice ID de ElevenLabs")
+user_input = st.text_area("Escribe tu pregunta aquí")
 
 if st.button("Responder con mi voz"):
     if not all([openai_api_key, eleven_api_key, voice_id, user_input]):
@@ -32,7 +32,7 @@ if st.button("Responder con mi voz"):
             st.write(texto_respuesta)
 
         # === ElevenLabs TTS ===
-        with st.spinner("🎙️ Generando voz con ElevenLabs..."):
+        with st.spinner("Generando voz con ElevenLabs..."):
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
