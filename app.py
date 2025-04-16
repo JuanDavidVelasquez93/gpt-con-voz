@@ -1,39 +1,38 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import requests
 from io import BytesIO
 from pydub import AudioSegment
 
-# === Configuración de claves ===
-st.title("GPT con tu voz clonada")
+# === Interfaz ===
+st.title("GPT con tu voz clonada 🎙️")
 st.write("Haz una pregunta y escucha la respuesta con tu voz (gracias a ElevenLabs)")
 
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-eleven_api_key = st.text_input("ElevenLabs API Key", type="password")
-voice_id = st.text_input("Voice ID de ElevenLabs")
-
-user_input = st.text_area("Escribe tu pregunta aquí")
+openai_api_key = st.text_input("🔑 OpenAI API Key", type="password")
+eleven_api_key = st.text_input("🔑 ElevenLabs API Key", type="password")
+voice_id = st.text_input("🗣️ Voice ID de ElevenLabs")
+user_input = st.text_area("📝 Escribe tu pregunta aquí")
 
 if st.button("Responder con mi voz"):
     if not all([openai_api_key, eleven_api_key, voice_id, user_input]):
         st.warning("Por favor completa todos los campos.")
     else:
-        # === GPT genera respuesta ===
-        openai.api_key = openai_api_key
-        with st.spinner("Pensando..."):
-            response = openai.ChatCompletion.create(
+        # === OpenAI GPT-4 ===
+        client = OpenAI(api_key=openai_api_key)
+        with st.spinner("GPT está pensando..."):
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "Responde de manera natural y conversacional"},
                     {"role": "user", "content": user_input}
                 ]
             )
-            texto_respuesta = response['choices'][0]['message']['content']
+            texto_respuesta = response.choices[0].message.content
             st.success("GPT respondió:")
             st.write(texto_respuesta)
 
-        # === ElevenLabs convierte texto a voz ===
-        with st.spinner("Generando audio con tu voz..."):
+        # === ElevenLabs TTS ===
+        with st.spinner("🎙️ Generando voz con ElevenLabs..."):
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
@@ -55,4 +54,5 @@ if st.button("Responder con mi voz"):
                 audio = AudioSegment.from_mp3(audio_data)
                 st.audio(audio_data, format="audio/mp3")
             else:
-                st.error("Error al generar el audio. Revisa tu Voice ID y tu clave.")
+                st.error("Error al generar el audio. Revisa tus claves o el ID de voz.")
+
