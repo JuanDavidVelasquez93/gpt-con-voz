@@ -4,21 +4,23 @@ import requests
 from io import BytesIO
 from pydub import AudioSegment
 
-# === Interfaz ===
-st.title("GPT con tu voz clonada")
+# ==== API Keys ====
+# OpenAI Key de prueba temporal
+client = OpenAI(api_key="sk-********************")  # Reemplazada aquí por seguridad
+
+# === UI ===
+st.title(" GPT con tu voz clonada 🎙️")
 st.write("Haz una pregunta y escucha la respuesta con tu voz (gracias a ElevenLabs)")
 
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-eleven_api_key = st.text_input("ElevenLabs API Key", type="password")
-voice_id = st.text_input("Voice ID de ElevenLabs")
+eleven_api_key = st.text_input(" ElevenLabs API Key", type="password")
+voice_id = st.text_input(" Voice ID de ElevenLabs")
 user_input = st.text_area("Escribe tu pregunta aquí")
 
 if st.button("Responder con mi voz"):
-    if not all([openai_api_key, eleven_api_key, voice_id, user_input]):
+    if not all([eleven_api_key, voice_id, user_input]):
         st.warning("Por favor completa todos los campos.")
     else:
-        # === OpenAI GPT-4 ===
-        client = OpenAI(api_key=openai_api_key)
+        # === GPT ===
         with st.spinner("GPT está pensando..."):
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -28,11 +30,11 @@ if st.button("Responder con mi voz"):
                 ]
             )
             texto_respuesta = response.choices[0].message.content
-            st.success("GPT respondió:")
+            st.success(" GPT respondió:")
             st.write(texto_respuesta)
 
-        # === ElevenLabs TTS ===
-        with st.spinner("Generando voz con ElevenLabs..."):
+        # === ElevenLabs ===
+        with st.spinner(" Generando voz con ElevenLabs..."):
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
@@ -54,5 +56,6 @@ if st.button("Responder con mi voz"):
                 audio = AudioSegment.from_mp3(audio_data)
                 st.audio(audio_data, format="audio/mp3")
             else:
-                st.error("Error al generar el audio. Revisa tus claves o el ID de voz.")
+                st.error(" Error al generar el audio. Verifica la API Key o el Voice ID.")
+
 
