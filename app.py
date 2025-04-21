@@ -4,7 +4,7 @@ import requests
 from io import BytesIO
 from pydub import AudioSegment
 
-
+client = OpenAI(api_key=openai_api_key)
 # === Interfaz Streamlit ===
 st.set_page_config(page_title="GPT con tu voz clonada", page_icon="")
 st.title("GPT con tu voz clonada ")
