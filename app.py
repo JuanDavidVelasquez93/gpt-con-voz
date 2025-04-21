@@ -4,7 +4,6 @@ import requests
 from io import BytesIO
 from pydub import AudioSegment
 
-client = OpenAI(api_key=openai_api_key)
 # === Interfaz Streamlit ===
 st.set_page_config(page_title="GPT con tu voz clonada", page_icon="")
 st.title("GPT con tu voz clonada ")
@@ -16,9 +15,12 @@ voice_id = st.text_input(" Voice ID de ElevenLabs")
 user_input = st.text_area(" Escribe tu pregunta aquí")
 
 if st.button("Responder con mi voz"):
-    if not all([eleven_api_key, voice_id, user_input]):
+    if not all([openai_api_key, eleven_api_key, voice_id, user_input]):
         st.warning("Por favor completa todos los campos.")
     else:
+        # ✅ Ahora sí: crea el cliente OpenAI dentro del bloque del botón
+        client = OpenAI(api_key=openai_api_key)
+
         # === GPT ===
         with st.spinner("GPT está pensando..."):
             try:
@@ -63,5 +65,4 @@ if st.button("Responder con mi voz"):
                     st.error("Error al generar audio con ElevenLabs.")
             except Exception as e:
                 st.error(f" Error al procesar voz:\n{e}")
-
 
