@@ -4,14 +4,13 @@ import requests
 from io import BytesIO
 from pydub import AudioSegment
 
-# === Config: OpenAI key temporal integrada ===
-client = OpenAI(api_key="sk-...reemplazada...")  # Clave activa solo para pruebas (no aparece aquí por seguridad)
 
 # === Interfaz Streamlit ===
 st.set_page_config(page_title="GPT con tu voz clonada", page_icon="")
 st.title("GPT con tu voz clonada ")
 st.write("Haz una pregunta y escucha la respuesta con tu voz (gracias a ElevenLabs)")
 
+openai_api_key = st.text_input("🔑 OpenAI API Key", type="password")
 eleven_api_key = st.text_input(" ElevenLabs API Key", type="password")
 voice_id = st.text_input(" Voice ID de ElevenLabs")
 user_input = st.text_area(" Escribe tu pregunta aquí")
