@@ -1,46 +1,76 @@
 import streamlit as st
-from openai import OpenAI
+import pandas as pd
+import torch
+from sentence_transformers import SentenceTransformer, util
 import requests
 from io import BytesIO
 
-# === Configuración de claves ===
-st.title("GPT con tu voz clonada")
-st.write("Haz una pregunta y escucha la respuesta con tu voz (gracias a ElevenLabs)")
+# === Cargar modelo de similitud ===
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-eleven_api_key = st.text_input("ElevenLabs API Key", type="password")
-voice_id = st.text_input("Voice ID de ElevenLabs")
+# === Leer base de conocimiento desde .txt ===
+def cargar_base_conocimiento():
+    with open("BaseConocimiento.txt", "r", encoding="utf-8") as f:
+        contenido = f.read()
 
-user_input = st.text_area("Escribe tu pregunta aquí")
+    bloques = contenido.split("====")
+    preguntas = []
+    respuestas = []
 
-if st.button("Responder con mi voz"):
-    if not all([openai_api_key, eleven_api_key, voice_id, user_input]):
-        st.warning("Por favor completa todos los campos.")
+    for bloque in bloques:
+        lineas = bloque.strip().splitlines()
+        pregunta = ""
+        chat = ""
+        for linea in lineas:
+            if linea.startswith("PREGUNTA:"):
+                pregunta = linea.replace("PREGUNTA:", "").strip()
+            elif linea.startswith("CHAT:"):
+                chat = linea.replace("CHAT:", "").strip()
+        if pregunta and chat:
+            preguntas.append(pregunta)
+            respuestas.append(chat)
+
+    return pd.DataFrame({"Pregunta": preguntas, "Respuesta": respuestas})
+
+# === Buscar mejor coincidencia ===
+def buscar_respuesta(user_input, df):
+    preguntas = df["Pregunta"].tolist()
+    embeddings = model.encode(preguntas, convert_to_tensor=True)
+    embedding_input = model.encode(user_input, convert_to_tensor=True)
+    similitudes = util.pytorch_cos_sim(embedding_input, embeddings)[0]
+
+    idx = torch.argmax(similitudes).item()
+    score = similitudes[idx].item()
+
+    if score > 0.7:
+        return df.iloc[idx]["Respuesta"]
     else:
-        # === GPT genera respuesta ===
-        client = OpenAI(api_key=openai_api_key)
-        with st.spinner("Pensando..."):
-            response = client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "Responde de manera natural y conversacional"},
-                    {"role": "user", "content": user_input}
-                ]
-            )
-            texto_respuesta = response.choices[0].message.content
-            st.success("GPT respondió:")
-            st.write(texto_respuesta)
+        return "Lo siento, no tengo información sobre eso."
 
-        # === ElevenLabs convierte texto a voz ===
-        with st.spinner("Generando audio con tu voz..."):
-            texto_formateado = texto_respuesta.strip().replace('. ', '.\n')
+# === Streamlit UI ===
+st.title("🤖 Agente con base de conocimiento")
+st.write("Escribe tu pregunta y responderé solo si está entrenada.")
 
+st.markdown("#### Configura ElevenLabs para voz personalizada")
+eleven_api_key = st.text_input("🔑 ElevenLabs API Key", type="password")
+voice_id = st.text_input("🗣️ Voice ID")
+
+user_input = st.text_area("✍️ Escribe tu pregunta aquí")
+
+if user_input:
+    df = cargar_base_conocimiento()
+    respuesta = buscar_respuesta(user_input, df)
+    st.markdown(f"**Respuesta:** {respuesta}")
+
+    # Generar audio si hay voz configurada
+    if respuesta != "Lo siento, no tengo información sobre eso." and eleven_api_key and voice_id:
+        with st.spinner("🎙️ Generando audio..."):
+            texto_formateado = respuesta.strip().replace('. ', '.\n')
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
                 "Content-Type": "application/json"
             }
-
             data = {
                 "text": texto_formateado,
                 "model_id": "eleven_monolingual_v1",
@@ -49,11 +79,10 @@ if st.button("Responder con mi voz"):
                     "similarity_boost": 1.0
                 }
             }
-
             response = requests.post(url, json=data, headers=headers)
-
             if response.status_code == 200:
                 audio_data = BytesIO(response.content)
                 st.audio(audio_data, format="audio/mp3")
+                st.download_button("📥 Descargar audio", audio_data, file_name="respuesta.mp3", mime="audio/mpeg")
             else:
-                st.error("Error al generar el audio. Revisa tu Voice ID y tu clave.")
+                st.error("Error al generar audio con ElevenLabs.")
