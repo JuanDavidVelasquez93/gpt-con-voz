@@ -34,17 +34,19 @@ if st.button("Responder con mi voz"):
 
         # === ElevenLabs convierte texto a voz ===
         with st.spinner("Generando audio con tu voz..."):
+            texto_formateado = texto_respuesta.strip().replace('. ', '.\n')
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
                 "Content-Type": "application/json"
             }
+
             data = {
-                "text": texto_respuesta,
+                "text": texto_formateado,
                 "model_id": "eleven_monolingual_v1",
                 "voice_settings": {
-                    "stability": 0.7,
-                    "similarity_boost": 0.8
+                "stability": 0.4,
+                "similarity_boost": 1.0
                 }
             }
 
