@@ -6,7 +6,7 @@ import requests
 from io import BytesIO
 
 # === Cargar modelo ===
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # === Leer archivo TXT cargado ===
 def cargar_base_conocimiento():
