@@ -59,7 +59,6 @@ if st.button("Responder con mi voz"):
 
                 if response.status_code == 200:
                     audio_data = BytesIO(response.content)
-                    audio = AudioSegment.from_mp3(audio_data)
                     st.audio(audio_data, format="audio/mp3")
                 else:
                     st.error("Error al generar audio con ElevenLabs.")
