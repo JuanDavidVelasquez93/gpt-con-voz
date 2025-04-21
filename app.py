@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import requests
 from io import BytesIO
 from pydub import AudioSegment
@@ -19,16 +19,16 @@ if st.button("Responder con mi voz"):
         st.warning("Por favor completa todos los campos.")
     else:
         # === GPT genera respuesta ===
-        openai.api_key = openai_api_key
+        client = OpenAI(api_key=openai_api_key)
         with st.spinner("Pensando..."):
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "Responde de manera natural y conversacional"},
                     {"role": "user", "content": user_input}
                 ]
             )
-            texto_respuesta = response['choices'][0]['message']['content']
+            texto_respuesta = response.choices[0].message.content
             st.success("GPT respondió:")
             st.write(texto_respuesta)
 
@@ -45,8 +45,8 @@ if st.button("Responder con mi voz"):
                 "text": texto_formateado,
                 "model_id": "eleven_monolingual_v1",
                 "voice_settings": {
-                "stability": 0.4,
-                "similarity_boost": 1.0
+                    "stability": 0.4,
+                    "similarity_boost": 1.0
                 }
             }
 
