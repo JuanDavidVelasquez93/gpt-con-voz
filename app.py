@@ -50,17 +50,20 @@ def buscar_respuesta(user_input, df):
 
 # === ElevenLabs API ===
 def generar_audio_elevenlabs(texto, voice_id, api_key):
+    # Mejora de formato para pausas naturales
+    texto_formateado = texto.replace('. ', '.\n')
+
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     headers = {
         "xi-api-key": api_key,
         "Content-Type": "application/json"
     }
     data = {
-        "text": texto,
+        "text": texto_formateado,
         "model_id": "eleven_monolingual_v1",
         "voice_settings": {
-            "stability": 0.7,
-            "similarity_boost": 0.8
+            "stability": 0.4,
+            "similarity_boost": 1.0
         }
     }
     response = requests.post(url, json=data, headers=headers)
