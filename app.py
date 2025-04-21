@@ -2,7 +2,6 @@ import streamlit as st
 from openai import OpenAI
 import requests
 from io import BytesIO
-from pydub import AudioSegment
 
 # === Configuración de claves ===
 st.title("GPT con tu voz clonada")
@@ -35,6 +34,7 @@ if st.button("Responder con mi voz"):
         # === ElevenLabs convierte texto a voz ===
         with st.spinner("Generando audio con tu voz..."):
             texto_formateado = texto_respuesta.strip().replace('. ', '.\n')
+
             url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
             headers = {
                 "xi-api-key": eleven_api_key,
@@ -54,7 +54,6 @@ if st.button("Responder con mi voz"):
 
             if response.status_code == 200:
                 audio_data = BytesIO(response.content)
-                audio = AudioSegment.from_mp3(audio_data)
                 st.audio(audio_data, format="audio/mp3")
             else:
                 st.error("Error al generar el audio. Revisa tu Voice ID y tu clave.")
